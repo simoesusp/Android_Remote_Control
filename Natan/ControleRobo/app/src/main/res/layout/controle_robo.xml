@@ -85,8 +85,7 @@
             android:layout_height="100dp"
             android:layout_column="2"
             android:layout_row="1"
-            android:background="@drawable/btright"
-            android:onClick="onClickRight" />
+            android:background="@drawable/btright" />
 
         <Button
             android:id="@+id/back"

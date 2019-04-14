@@ -24,5 +24,6 @@
     <string name="menu_disconnect">Desconectar</string>
     <string name="menu_scan">Scanear</string>
     <string name="menu_stop">Parar</string>
+    <string name="menu_refresh">Refresh</string>
 
 </resources>

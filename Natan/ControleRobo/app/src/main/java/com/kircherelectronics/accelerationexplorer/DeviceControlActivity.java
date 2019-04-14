@@ -16,6 +16,7 @@
 
 package com.kircherelectronics.accelerationexplorer;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.BroadcastReceiver;
@@ -25,7 +26,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
@@ -33,9 +33,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ExpandableListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -97,11 +95,9 @@ public class DeviceControlActivity extends Activity implements Runnable {
             }
         }
     };
-    private String mDeviceName;
     private String mDeviceAddress;
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
-
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
@@ -118,8 +114,7 @@ public class DeviceControlActivity extends Activity implements Runnable {
             mBluetoothLeService = null;
         }
     };
-    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics =
-            new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
+    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics = new ArrayList<>();
     private BluetoothGattCharacteristic mNotifyCharacteristic;
     // If a given GATT characteristic is selected, check for supported features.  This sample
     // demonstrates 'Read' and 'Notify' features.  See
@@ -136,8 +131,6 @@ public class DeviceControlActivity extends Activity implements Runnable {
         return intentFilter;
     }
 
-
-
     public void clearUI() {
         mDataField.setText(R.string.no_data);
     }
@@ -148,7 +141,7 @@ public class DeviceControlActivity extends Activity implements Runnable {
         setContentView(R.layout.controle_robo);
 
         final Intent intent = getIntent();
-        mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
+        String mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
 
         initButtons();
@@ -160,19 +153,13 @@ public class DeviceControlActivity extends Activity implements Runnable {
 
     }
 
-    private void updateI() {
-        i++;
-        System.out.println("update");
-    }
-
-
+    @SuppressLint("ClickableViewAccessibility")
     private void initButtons() {
 
-        final Button button = (Button) findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener()
-        {
-            public void onClick(View v)
-            {
+        final Button button = findViewById(R.id.button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 if (!buttonClicked) {
                     buttonClicked = true;
                     button.setBackgroundResource(R.drawable.btoff);
@@ -184,44 +171,39 @@ public class DeviceControlActivity extends Activity implements Runnable {
                     thread.interrupt();
                     thread = null;
                 }
-
             }
         });
 
-        Button btLeft = (Button) findViewById(R.id.left);
+        Button btLeft = findViewById(R.id.left);
         btLeft.setOnTouchListener(new View.OnTouchListener() {
-
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN){
+                if(event.getAction() == MotionEvent.ACTION_DOWN) {
                     i = 100;
                     flagTouchLeft = true;
                 }
-                if(event.getAction() == MotionEvent.ACTION_UP){
+                if(event.getAction() == MotionEvent.ACTION_UP) {
                     i = 200;
                     flagTouchLeft = false;
                 }
                 return true;
             }
-
         });
 
-        Button btRight = (Button) findViewById(R.id.right);
+        Button btRight = findViewById(R.id.right);
         btRight.setOnTouchListener(new View.OnTouchListener() {
-
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN){
+                if(event.getAction() == MotionEvent.ACTION_DOWN) {
                     i = 100;
                     flagTouchRight = true;
                 }
-                if(event.getAction() == MotionEvent.ACTION_UP){
+                if(event.getAction() == MotionEvent.ACTION_UP) {
                     i = 200;
                     flagTouchRight = false;
                 }
                 return true;
             }
-
         });
 
     }
@@ -229,53 +211,51 @@ public class DeviceControlActivity extends Activity implements Runnable {
 
 
     @Override
-    public void run()
-    {
-        while (!Thread.currentThread().isInterrupted())
-        {
+    public void run() {
+        while (!Thread.currentThread().isInterrupted()) {
             i++;
-            for (int j = 0; j < 30000000; j++);
+
+            //TODO: Figure out what delay to use and move to a scheduled executor
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException ignored) {}
 
 
             if (flagTouchLeft) {
                 if (vel > 0 && vel <= 5) {
                     if (l > 0)
                         l--;
-                }
-                else if(vel >= 6 && vel <= 10) {
+                } else if(vel >= 6 && vel <= 10) {
                     if (l > 6)
                         l--;
                     else if (l == 6)
                         l = 0;
                 }
-            }
-            else {
+            } else {
                 l = vel;
             }
 
             if (flagTouchRight) {
                 if (vel > 0 && vel <= 5) {
-                    if (r > 0)
+                    if (r > 0) {
                         r--;
+                    }
                 }
                 else if(vel >= 6 && vel <= 10) {
-                    if (r > 6)
+                    if (r > 6) {
                         r--;
-                    else if (r == 6)
+                    } else if (r == 6) {
                         r = 0;
+                    }
                 }
-            }
-            else {
+            } else {
                 r = vel;
             }
 
 
             onClickWrite(l, r);
-
         }
-
     }
-
 
     @Override
     public void onResume() {
@@ -379,7 +359,6 @@ public class DeviceControlActivity extends Activity implements Runnable {
         }
     }
 
-
     public void onClickFront(View v) {
         if (vel >= 0 && vel < 5) {
             vel++;
@@ -417,7 +396,7 @@ public class DeviceControlActivity extends Activity implements Runnable {
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(Call call, Response response) {
                 Log.i(TAG, "Response: " + response.code() + ", " + response.message());
             }
         });

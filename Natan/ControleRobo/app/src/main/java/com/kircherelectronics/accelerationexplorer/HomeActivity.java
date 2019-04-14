@@ -30,7 +30,7 @@ public class HomeActivity extends Activity {
     }
 
     private void initButtonBluetooth() {
-        Button button = (Button) this.findViewById(R.id.button_bluetooth_mode);
+        Button button = this.findViewById(R.id.button_bluetooth_mode);
 
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

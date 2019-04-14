@@ -27,7 +27,7 @@ public class SampleGattAttributes {
     public static String CLIENT_CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
     public static String HM_10_CONF;
     public static String HM_RX_TX;
-    private static HashMap<String, String> attributes = new HashMap();
+    private static HashMap<String, String> attributes = new HashMap<>();
 
     static {
         HM_10_CONF = "0000ffe0-0000-1000-8000-00805f9b34fb"; //service uuid

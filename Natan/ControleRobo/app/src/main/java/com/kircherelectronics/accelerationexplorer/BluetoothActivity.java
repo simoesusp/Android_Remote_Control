@@ -3,9 +3,13 @@ package com.kircherelectronics.accelerationexplorer;
 import android.app.Activity;
 import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -22,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class BluetoothActivity extends ListActivity {
     private static final int REQUEST_ENABLE_BT = 1;
@@ -29,27 +34,22 @@ public class BluetoothActivity extends ListActivity {
     private static final long SCAN_PERIOD = 10000;
     private LeDeviceListAdapter mLeDeviceListAdapter;
     private BluetoothAdapter mBluetoothAdapter;
+    private BluetoothLeScanner mBluetoothScanner;
     private boolean mScanning;
     private Handler mHandler;
     // Device scan callback.
-    private BluetoothAdapter.LeScanCallback mLeScanCallback =
-            new BluetoothAdapter.LeScanCallback() {
-
+    private ScanCallback mLeScanCallback = new ScanCallback() {
+        @Override
+        public void onScanResult(int callbackType, final ScanResult result) {
+            runOnUiThread(new Runnable() {
                 @Override
-                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mLeDeviceListAdapter.addDevice(device);
-                            mLeDeviceListAdapter.notifyDataSetChanged();
-                        }
-                    });
+                public void run() {
+                    mLeDeviceListAdapter.addDevice(result.getDevice());
+                    mLeDeviceListAdapter.notifyDataSetChanged();
                 }
-            };
-
-    public BluetoothActivity() {
-        this.mLeScanCallback = new C06791();
-    }
+            });
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -69,12 +69,12 @@ public class BluetoothActivity extends ListActivity {
         final BluetoothManager bluetoothManager =
                 (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
+        mBluetoothScanner = mBluetoothAdapter.getBluetoothLeScanner();
 
         // Checks if Bluetooth is supported on the device.
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, R.string.error_bluetooth_not_supported, Toast.LENGTH_SHORT).show();
             finish();
-            return;
         }
     }
 
@@ -122,7 +122,7 @@ public class BluetoothActivity extends ListActivity {
         }
 
         // Initializes list view adapter.
-        mLeDeviceListAdapter = new LeDeviceListAdapter();
+        mLeDeviceListAdapter = new LeDeviceListAdapter(getLayoutInflater());
         setListAdapter(mLeDeviceListAdapter);
         scanLeDevice(true);
     }
@@ -152,7 +152,7 @@ public class BluetoothActivity extends ListActivity {
         intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
         intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
         if (mScanning) {
-            mBluetoothAdapter.stopLeScan(mLeScanCallback);
+            mBluetoothScanner.stopScan(mLeScanCallback);
             mScanning = false;
         }
         startActivity(intent);
@@ -161,20 +161,26 @@ public class BluetoothActivity extends ListActivity {
     private void scanLeDevice(final boolean enable) {
         if (enable) {
             // Stops scanning after a pre-defined scan period.
-            mHandler.postDelayed(new C06802(), SCAN_PERIOD);/* {
+            mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     mScanning = false;
-                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                    mBluetoothScanner.stopScan(mLeScanCallback);
                     invalidateOptionsMenu();
                 }
-            }, SCAN_PERIOD);*/
+            }, SCAN_PERIOD);
 
             mScanning = true;
-            mBluetoothAdapter.startLeScan(mLeScanCallback);
+            mBluetoothScanner.startScan(
+                    Collections.<ScanFilter>emptyList(),
+                    new ScanSettings.Builder()
+                            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                            .build(),
+                    mLeScanCallback
+            );
         } else {
             mScanning = false;
-            mBluetoothAdapter.stopLeScan(mLeScanCallback);
+            mBluetoothScanner.stopScan(mLeScanCallback);
         }
         invalidateOptionsMenu();
     }
@@ -184,50 +190,15 @@ public class BluetoothActivity extends ListActivity {
         TextView deviceAddress;
     }
 
-    class C06791 implements LeScanCallback {
-
-        C06791() {
-        }
-
-        public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-            BluetoothActivity.this.runOnUiThread(new C06781(device));
-        }
-
-        /* renamed from: p.b.ble.DeviceScanActivity.1.1 */
-        class C06781 implements Runnable {
-            private final /* synthetic */ BluetoothDevice val$device;
-
-            C06781(BluetoothDevice bluetoothDevice) {
-                this.val$device = bluetoothDevice;
-            }
-
-            public void run() {
-                BluetoothActivity.this.mLeDeviceListAdapter.addDevice(this.val$device);
-                BluetoothActivity.this.mLeDeviceListAdapter.notifyDataSetChanged();
-            }
-        }
-    }
-
-    class C06802 implements Runnable {
-        C06802() {
-        }
-
-        public void run() {
-            BluetoothActivity.this.mScanning = false;
-            BluetoothActivity.this.mBluetoothAdapter.stopLeScan(BluetoothActivity.this.mLeScanCallback);
-            BluetoothActivity.this.invalidateOptionsMenu();
-        }
-    }
-
     // Adapter for holding devices found through scanning.
-    private class LeDeviceListAdapter extends BaseAdapter {
+    private static class LeDeviceListAdapter extends BaseAdapter {
         private ArrayList<BluetoothDevice> mLeDevices;
-        private LayoutInflater mInflator;
+        private LayoutInflater mInflater;
 
-        public LeDeviceListAdapter() {
+        public LeDeviceListAdapter(LayoutInflater inflater) {
             super();
-            mLeDevices = new ArrayList<BluetoothDevice>();
-            mInflator = BluetoothActivity.this.getLayoutInflater();
+            mLeDevices = new ArrayList<>();
+            mInflater = inflater;
         }
 
         public void addDevice(BluetoothDevice device) {
@@ -264,10 +235,10 @@ public class BluetoothActivity extends ListActivity {
             ViewHolder viewHolder;
             // General ListView optimization code.
             if (view == null) {
-                view = mInflator.inflate(R.layout.listitem_device, null);
+                view = mInflater.inflate(R.layout.listitem_device, null);
                 viewHolder = new ViewHolder();
-                viewHolder.deviceAddress = (TextView) view.findViewById(R.id.device_address);
-                viewHolder.deviceName = (TextView) view.findViewById(R.id.device_name);
+                viewHolder.deviceAddress = view.findViewById(R.id.device_address);
+                viewHolder.deviceName = view.findViewById(R.id.device_name);
                 view.setTag(viewHolder);
             } else {
                 viewHolder = (ViewHolder) view.getTag();
