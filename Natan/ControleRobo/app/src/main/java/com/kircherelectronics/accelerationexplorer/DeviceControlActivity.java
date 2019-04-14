@@ -48,8 +48,12 @@ import okhttp3.Response;
  * Bluetooth LE API.
  */
 public class DeviceControlActivity extends Activity implements Runnable {
+    //this should be global
     public static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
-    public static final String IP = "192.168.43.253";
+
+    //TODO: scan network for the robot instead of hardcoding,
+    //move HTTP controls to a separate class.
+    public static final String IP = "192.168.1.32";
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";

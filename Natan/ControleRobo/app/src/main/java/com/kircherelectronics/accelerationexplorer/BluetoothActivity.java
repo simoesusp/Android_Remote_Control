@@ -159,6 +159,10 @@ public class BluetoothActivity extends ListActivity {
     }
 
     private void scanLeDevice(final boolean enable) {
+        //scanner not initialized
+        if(mBluetoothScanner == null) {
+            return;
+        }
         if (enable) {
             // Stops scanning after a pre-defined scan period.
             mHandler.postDelayed(new Runnable() {
