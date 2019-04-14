@@ -18,7 +18,6 @@ package com.kircherelectronics.accelerationexplorer;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -33,10 +32,8 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -60,11 +57,8 @@ public class DeviceControlActivity extends Activity implements Runnable {
     private Thread thread;
     public BluetoothLeService mBluetoothLeService;
     public boolean mConnected = false;
-    private TextView mDataField;
-    private TextView txtdebug;
 
     private int l = 0, r = 0, vel = 0;
-    int i = 0;
     boolean flagTouchLeft = false;
     boolean flagTouchRight = false;
     boolean buttonClicked = false;
@@ -88,7 +82,6 @@ public class DeviceControlActivity extends Activity implements Runnable {
                 mConnected = false;
                 updateConnectionState(R.string.disconnected);
                 invalidateOptionsMenu();
-                clearUI();
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
 
                 displayData();
@@ -114,13 +107,6 @@ public class DeviceControlActivity extends Activity implements Runnable {
             mBluetoothLeService = null;
         }
     };
-    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics = new ArrayList<>();
-    private BluetoothGattCharacteristic mNotifyCharacteristic;
-    // If a given GATT characteristic is selected, check for supported features.  This sample
-    // demonstrates 'Read' and 'Notify' features.  See
-    // http://d.android.com/reference/android/bluetooth/BluetoothGatt.html for the complete
-    // list of supported characteristic features.
-
 
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
@@ -129,10 +115,6 @@ public class DeviceControlActivity extends Activity implements Runnable {
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
-    }
-
-    public void clearUI() {
-        mDataField.setText(R.string.no_data);
     }
 
     @Override
@@ -179,11 +161,9 @@ public class DeviceControlActivity extends Activity implements Runnable {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
-                    i = 100;
                     flagTouchLeft = true;
                 }
                 if(event.getAction() == MotionEvent.ACTION_UP) {
-                    i = 200;
                     flagTouchLeft = false;
                 }
                 return true;
@@ -195,17 +175,68 @@ public class DeviceControlActivity extends Activity implements Runnable {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
-                    i = 100;
                     flagTouchRight = true;
                 }
                 if(event.getAction() == MotionEvent.ACTION_UP) {
-                    i = 200;
                     flagTouchRight = false;
                 }
                 return true;
             }
         });
 
+        Button btFront = findViewById(R.id.front);
+        btFront.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    /*
+                    if (vel >= 0 && vel < 5) {
+                        vel++;
+                    } else if (vel == 6) {
+                        vel = 0;
+                    } else if (vel > 6 && vel <= 10) {
+                        vel--;
+                    }
+                     */
+                    //TODO: figure out what value to use, maybe a speed selector?
+                    vel = 1;
+                    request("/ligaled");
+                }
+                if(event.getAction() == MotionEvent.ACTION_UP) {
+                    if(vel >= 0 && vel < 5) {
+                        vel = 0;
+                    }
+                }
+                return true;
+            }
+        });
+
+        Button btBack = findViewById(R.id.back);
+        btBack.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    /*
+                    if (vel > 0 && vel <= 5) {
+                        vel--;
+                    } else if (vel == 0){
+                        vel = 6;
+                    } else if (vel >= 6 && vel < 10) {
+                        vel++;
+                    }
+                     */
+                    //TODO: figure out what value to use, maybe a speed selector?
+                    vel = 6;
+                    request("/desligaled");
+                }
+                if(event.getAction() == MotionEvent.ACTION_UP) {
+                    if(vel >= 6 && vel < 10) {
+                        vel = 0;
+                    }
+                }
+                return true;
+            }
+        });
     }
 
 
@@ -213,8 +244,6 @@ public class DeviceControlActivity extends Activity implements Runnable {
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
-            i++;
-
             //TODO: Figure out what delay to use and move to a scheduled executor
             try {
                 Thread.sleep(50);
@@ -359,7 +388,7 @@ public class DeviceControlActivity extends Activity implements Runnable {
         }
     }
 
-    public void onClickFront(View v) {
+    /* public void onClickFront(View v) {
         if (vel >= 0 && vel < 5) {
             vel++;
         } else if (vel == 6) {
@@ -379,13 +408,14 @@ public class DeviceControlActivity extends Activity implements Runnable {
             vel++;
         }
         request("/desligaled");
-    }
+    } */
 
     public void onClickStop(View v) {
         vel = 0;
     }
 
     private static void request(String url) {
+        Log.d(TAG, "Executing request: GET " + url);
         HTTP_CLIENT.newCall(new Request.Builder()
                 .url("http://" + IP + url)
                 .build()
