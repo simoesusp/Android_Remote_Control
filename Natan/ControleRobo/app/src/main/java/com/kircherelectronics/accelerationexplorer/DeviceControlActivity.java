@@ -241,6 +241,17 @@ public class DeviceControlActivity extends Activity implements Runnable {
                 return true;
             }
         });
+
+        Button stopButton = findViewById(R.id.stop);
+        stopButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    vel = 0;
+                }
+                return true;
+            }
+        });
     }
 
 
@@ -412,11 +423,11 @@ public class DeviceControlActivity extends Activity implements Runnable {
             vel++;
         }
         request("/desligaled");
-    } */
+    }
 
     public void onClickStop(View v) {
         vel = 0;
-    }
+    } */
 
     private static void request(String url) {
         Log.d(TAG, "Executing request: GET " + url);
