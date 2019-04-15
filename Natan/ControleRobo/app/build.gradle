@@ -37,7 +37,8 @@ def lint = [
         "static",
         "try",
         "unchecked",
-        "varargs"
+        "varargs",
+        "-options"
 ]
 
 tasks.withType(JavaCompile) {
