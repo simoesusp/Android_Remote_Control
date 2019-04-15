@@ -1,5 +1,6 @@
 package com.kircherelectronics.accelerationexplorer;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
@@ -13,8 +14,13 @@ import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,9 +33,11 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class BluetoothActivity extends ListActivity {
     private static final int REQUEST_ENABLE_BT = 1;
+    private static final int REQUEST_COARSE_LOCATION = 2;
     // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 10000;
     private LeDeviceListAdapter mLeDeviceListAdapter;
@@ -49,6 +57,19 @@ public class BluetoothActivity extends ListActivity {
                 }
             });
         }
+
+        @Override
+        public void onBatchScanResults(final List<ScanResult> results) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    for(ScanResult result : results) {
+                        mLeDeviceListAdapter.addDevice(result.getDevice());
+                    }
+                    mLeDeviceListAdapter.notifyDataSetChanged();
+                }
+            });
+        }
     };
 
     @Override
@@ -62,19 +83,13 @@ public class BluetoothActivity extends ListActivity {
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
             finish();
+            return;
         }
 
-        // Initializes a Bluetooth adapter.  For API level 18 and above, get a reference to
-        // BluetoothAdapter through BluetoothManager.
-        final BluetoothManager bluetoothManager =
-                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        mBluetoothAdapter = bluetoothManager.getAdapter();
-        mBluetoothScanner = mBluetoothAdapter.getBluetoothLeScanner();
-
-        // Checks if Bluetooth is supported on the device.
-        if (mBluetoothAdapter == null) {
-            Toast.makeText(this, R.string.error_bluetooth_not_supported, Toast.LENGTH_SHORT).show();
-            finish();
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_COARSE_LOCATION);
+        } else {
+            setupBt();
         }
     }
 
@@ -114,7 +129,7 @@ public class BluetoothActivity extends ListActivity {
 
         // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
         // fire an intent to display a dialog asking the user to grant permission to enable it.
-        if (!mBluetoothAdapter.isEnabled()) {
+        if (mBluetoothAdapter != null && !mBluetoothAdapter.isEnabled()) {
             if (!mBluetoothAdapter.isEnabled()) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
@@ -133,6 +148,13 @@ public class BluetoothActivity extends ListActivity {
         if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
             finish();
             return;
+        }
+        if (requestCode == REQUEST_COARSE_LOCATION) {
+            if(resultCode != PackageManager.PERMISSION_GRANTED) {
+                finish();
+                return;
+            }
+            setupBt();
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -156,6 +178,41 @@ public class BluetoothActivity extends ListActivity {
             mScanning = false;
         }
         startActivity(intent);
+    }
+
+    private void setupBt() {
+        // Initializes a Bluetooth adapter.  For API level 18 and above, get a reference to
+        // BluetoothAdapter through BluetoothManager.
+        final BluetoothManager bluetoothManager =
+                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+
+        // Checks if Bluetooth is supported on the device.
+        if (bluetoothManager == null || (mBluetoothAdapter = bluetoothManager.getAdapter()) == null) {
+            Toast.makeText(this, R.string.error_bluetooth_not_supported, Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        mBluetoothScanner = mBluetoothAdapter.getBluetoothLeScanner();
+
+        // Start loction service
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        Criteria locationCritera = new Criteria();
+        locationCritera.setAccuracy(Criteria.ACCURACY_COARSE);
+        locationCritera.setAltitudeRequired(false);
+        locationCritera.setBearingRequired(false);
+        locationCritera.setCostAllowed(true);
+        locationCritera.setPowerRequirement(Criteria.NO_REQUIREMENT);
+
+        String providerName = locationManager.getBestProvider(locationCritera, true);
+
+        if (providerName == null || !locationManager.isProviderEnabled(providerName)) {
+            // Provider not enabled, prompt user to enable it
+            Toast.makeText(this, R.string.turn_on_gps, Toast.LENGTH_LONG).show();
+            Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(myIntent);
+        }
     }
 
     private void scanLeDevice(final boolean enable) {

@@ -5,6 +5,9 @@
 
 
     <!-- ****************************************** -->
+    <string name="back_broken">A marcha ré está quebrada</string>
+    <string name="turn_on_gps">Por favor ative a localização, ela é necessária para localizar o robô</string>
+
     <string name="ble_not_supported">BLE não é suportado</string>
     <string name="label_data">Dados:</string>
     <string name="label_device_address">Endereço do Aparelho:</string>

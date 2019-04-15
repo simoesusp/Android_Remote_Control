@@ -32,6 +32,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import java.io.IOException;
 
@@ -193,7 +194,6 @@ public class DeviceControlActivity extends Activity implements Runnable {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
-                    /*
                     if (vel >= 0 && vel < 5) {
                         vel++;
                     } else if (vel == 6) {
@@ -201,15 +201,8 @@ public class DeviceControlActivity extends Activity implements Runnable {
                     } else if (vel > 6 && vel <= 10) {
                         vel--;
                     }
-                     */
-                    //TODO: figure out what value to use, maybe a speed selector?
-                    vel = 1;
+
                     request("/ligaled");
-                }
-                if(event.getAction() == MotionEvent.ACTION_UP) {
-                    if(vel >= 0 && vel < 5) {
-                        vel = 0;
-                    }
                 }
                 return true;
             }
@@ -220,23 +213,16 @@ public class DeviceControlActivity extends Activity implements Runnable {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
-                    /*
                     if (vel > 0 && vel <= 5) {
                         vel--;
                     } else if (vel == 0){
-                        vel = 6;
+                        Toast.makeText(DeviceControlActivity.this, R.string.back_broken, Toast.LENGTH_SHORT).show();
+                        //vel = 6;
                     } else if (vel >= 6 && vel < 10) {
                         vel++;
                     }
-                     */
-                    //TODO: figure out what value to use, maybe a speed selector?
-                    vel = 6;
+
                     request("/desligaled");
-                }
-                if(event.getAction() == MotionEvent.ACTION_UP) {
-                    if(vel >= 6 && vel < 10) {
-                        vel = 0;
-                    }
                 }
                 return true;
             }
@@ -261,9 +247,8 @@ public class DeviceControlActivity extends Activity implements Runnable {
         while (!Thread.currentThread().isInterrupted()) {
             //TODO: Figure out what delay to use and move to a scheduled executor
             try {
-                Thread.sleep(50);
+                Thread.sleep(25);
             } catch (InterruptedException ignored) {}
-
 
             if (flagTouchLeft) {
                 if (vel > 0 && vel <= 5) {
@@ -296,6 +281,14 @@ public class DeviceControlActivity extends Activity implements Runnable {
                 r = vel;
             }
 
+            if(vel == 0) {
+                if(flagTouchLeft) {
+                    r = 1;
+                }
+                if(flagTouchRight) {
+                    l = 1;
+                }
+            }
 
             onClickWrite(l, r);
         }
