@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.kircherelectronics.accelerationexplorer;
+package com.github.simoesusp.takethecoverout;
 
 import java.util.HashMap;
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.kircherelectronics.accelerationexplorer;
+package com.github.simoesusp.takethecoverout;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -34,16 +34,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.kircherelectronics.accelerationexplorer.control.DeviceController;
-import com.kircherelectronics.accelerationexplorer.control.HttpDeviceController;
+import com.github.simoesusp.takethecoverout.control.DeviceController;
+import com.github.simoesusp.takethecoverout.control.HttpDeviceController;
 
-import java.io.IOException;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 /**
  * For a given BLE device, this Activity provides the user interface to connect, display data,

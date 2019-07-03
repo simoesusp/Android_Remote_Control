@@ -1,4 +1,4 @@
-package com.kircherelectronics.accelerationexplorer.control;
+package com.github.simoesusp.takethecoverout.control;
 
 import android.util.Log;
 

@@ -1,4 +1,4 @@
-package com.kircherelectronics.accelerationexplorer;
+package com.github.simoesusp.takethecoverout;
 
 import android.Manifest;
 import android.app.Activity;

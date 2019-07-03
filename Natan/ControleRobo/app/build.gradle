@@ -5,7 +5,7 @@ android {
     buildToolsVersion '28.0.3'
 
     defaultConfig {
-        applicationId "com.kircherelectronics.accelerationexplorer"
+        applicationId "com.github.simoesusp.takethecoverout"
         minSdkVersion 21
         targetSdkVersion 26
     }
