@@ -34,6 +34,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.kircherelectronics.accelerationexplorer.control.DeviceController;
+import com.kircherelectronics.accelerationexplorer.control.HttpDeviceController;
+
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -49,12 +52,9 @@ import okhttp3.Response;
  * Bluetooth LE API.
  */
 public class DeviceControlActivity extends Activity implements Runnable {
-    //this should be global
-    public static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
-
     //TODO: scan network for the robot instead of hardcoding,
     //move HTTP controls to a separate class.
-    public static final String IP = "192.168.1.32";
+    public static final String IP = "192.168.4.1";
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
@@ -68,6 +68,9 @@ public class DeviceControlActivity extends Activity implements Runnable {
     boolean flagTouchRight = false;
     boolean buttonClicked = false;
     boolean fAuto = false;
+
+    //TODO remove
+    private final DeviceController test = new HttpDeviceController(IP);
 
     // Handles various events fired by the Service.
     // ACTION_GATT_CONNECTED: connected to a GATT server.
@@ -88,7 +91,6 @@ public class DeviceControlActivity extends Activity implements Runnable {
                 updateConnectionState(R.string.disconnected);
                 invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-
                 displayData();
             }
         }
@@ -157,6 +159,9 @@ public class DeviceControlActivity extends Activity implements Runnable {
                     button.setBackgroundResource(R.drawable.bton);
                     thread.interrupt();
                     thread = null;
+                    l = 0;
+                    r = 0;
+                    vel = 0;
                 }
             }
         });
@@ -201,8 +206,6 @@ public class DeviceControlActivity extends Activity implements Runnable {
                     } else if (vel > 6 && vel <= 10) {
                         vel--;
                     }
-
-                    request("/ligaled");
                 }
                 return true;
             }
@@ -221,8 +224,6 @@ public class DeviceControlActivity extends Activity implements Runnable {
                     } else if (vel >= 6 && vel < 10) {
                         vel++;
                     }
-
-                    request("/desligaled");
                 }
                 return true;
             }
@@ -369,75 +370,17 @@ public class DeviceControlActivity extends Activity implements Runnable {
                 mBluetoothLeService.writeCustomCharacteristic(0xFF);
             }
         }
-        int speed1, speed2, dir1, dir2;
-        if(l >= 0 && l < 5) {
-            speed1 = 1024 * l / 5;
-            dir1 = 0;
-        } else {
-            speed1 = 1024 * (l - 5) / 5;
-            dir1 = 1;
-        }
-        if(r >= 0 && r < 5) {
-            speed2 = 1024 * r / 5;
-            dir2 = 0;
-        } else {
-            speed2 = 1024 * (r - 5) / 5;
-            dir2 = 1;
-        }
-        request(String.format("/motor?speed1=%d&speed2=%d&dir1=%d&dir2=%d", speed1, speed2, dir1, dir2));
+        test.sendControl(l, r);
     }
 
     public void onClickAuto(View v) {
-        if (!fAuto) {
+        Toast.makeText(this, R.string.dont_do_that, Toast.LENGTH_SHORT).show();
+        /*if (!fAuto) {
             fAuto = true;
         } else {
             fAuto = false;
             vel = r = l = 0;
-        }
-    }
-
-    /* public void onClickFront(View v) {
-        if (vel >= 0 && vel < 5) {
-            vel++;
-        } else if (vel == 6) {
-            vel = 0;
-        } else if (vel > 6 && vel <= 10) {
-            vel--;
-        }
-        request("/ligaled");
-    }
-
-    public void onClickBack(View v) {
-        if (vel > 0 && vel <= 5) {
-            vel--;
-        } else if (vel == 0){
-            vel = 6;
-        } else if (vel >= 6 && vel < 10) {
-            vel++;
-        }
-        request("/desligaled");
-    }
-
-    public void onClickStop(View v) {
-        vel = 0;
-    } */
-
-    private static void request(String url) {
-        Log.d(TAG, "Executing request: GET " + url);
-        HTTP_CLIENT.newCall(new Request.Builder()
-                .url("http://" + IP + url)
-                .build()
-        ).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e(TAG, "IO error", e);
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) {
-                Log.i(TAG, "Response: " + response.code() + ", " + response.message());
-            }
-        });
+        }*/
     }
 }
 
