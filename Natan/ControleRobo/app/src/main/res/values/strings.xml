@@ -9,6 +9,13 @@
     <string name="turn_on_gps">Por favor ative a localização, ela é necessária para localizar o robô</string>
     <string name="dont_do_that">Não faça isso...</string>
 
+    <string name="choose_comm_method">Escolha o método de comunicação</string>
+    <string name="bluetooth">Bluetooth</string>
+    <string name="wifi">Wifi</string>
+
+    <string name="choose_ip">Digite o endereço IP do robô</string>
+    <string name="malformed_ip">Endereço IP mal formatado</string>
+
     <string name="ble_not_supported">BLE não é suportado</string>
     <string name="label_data">Dados:</string>
     <string name="label_device_address">Endereço do Aparelho:</string>
