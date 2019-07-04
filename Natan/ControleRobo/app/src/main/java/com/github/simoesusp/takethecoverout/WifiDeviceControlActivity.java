@@ -48,14 +48,14 @@ public class WifiDeviceControlActivity extends BaseDeviceControlActivity {
             }
         }
         int speed1, speed2, dir1, dir2;
-        if(l >= 0 && l < 5) {
+        if(l <= 5) {
             speed1 = MAX_SPEED_VALUE * l / 5;
             dir1 = 0;
         } else {
             speed1 = MAX_SPEED_VALUE * (l - 5) / 5;
             dir1 = 1;
         }
-        if(r >= 0 && r < 5) {
+        if(r <= 5) {
             speed2 = MAX_SPEED_VALUE * r / 5;
             dir2 = 0;
         } else {
