@@ -115,8 +115,9 @@ public abstract class BaseDeviceControlActivity extends Activity implements Runn
                     if (vel > 0 && vel <= 5) {
                         vel--;
                     } else if (vel == 0) {
-                        Toast.makeText(BaseDeviceControlActivity.this, R.string.back_broken, Toast.LENGTH_SHORT).show();
-                        //vel = 6;
+                        //FINALLY fixed
+                        //Toast.makeText(BaseDeviceControlActivity.this, R.string.back_broken, Toast.LENGTH_SHORT).show();
+                        vel = 6;
                     } else if (vel >= 6 && vel < 10) {
                         vel++;
                     }
