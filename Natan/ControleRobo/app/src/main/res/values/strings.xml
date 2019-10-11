@@ -5,13 +5,17 @@
 
 
     <!-- ****************************************** -->
-    <string name="back_broken">A marcha ré está quebrada</string>
+    <string name="back_broken">A marcha ré está desativada</string>
     <string name="turn_on_gps">Por favor ative a localização, ela é necessária para localizar o robô</string>
-    <string name="dont_do_that">Não faça isso...</string>
+    <string name="dont_do_that">Não faça isso…</string>
+
+    <string name="enable_back">Ativar marcha ré</string>
+    <string name="max_speed">Velocidade máxima (%)</string>
 
     <string name="choose_comm_method">Escolha o método de comunicação</string>
     <string name="bluetooth">Bluetooth</string>
     <string name="wifi">Wifi</string>
+    <string name="settings">Configurações</string>
 
     <string name="choose_ip">Digite o endereço IP do robô</string>
     <string name="malformed_ip">Endereço IP mal formatado</string>

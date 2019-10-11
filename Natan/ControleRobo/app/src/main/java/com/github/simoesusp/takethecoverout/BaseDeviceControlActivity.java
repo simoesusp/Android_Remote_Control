@@ -1,14 +1,18 @@
 package com.github.simoesusp.takethecoverout;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
-public abstract class BaseDeviceControlActivity extends Activity implements Runnable {
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
+
+public abstract class BaseDeviceControlActivity extends AppCompatActivity implements Runnable {
     protected volatile int l = 0;
     protected volatile int r = 0;
     protected volatile int vel = 0;
@@ -17,15 +21,27 @@ public abstract class BaseDeviceControlActivity extends Activity implements Runn
     protected volatile boolean buttonClicked = false;
     protected volatile boolean fAuto = false;
 
+    protected boolean backEnabled;
+    protected double speedMultiplier;
+
     private Thread sendThread;
 
     protected abstract void sendMotorSpeed(boolean automatic, int l, int r);
+
     protected abstract int sendDelay();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Toolbar t = new Toolbar(this);
+        t.setTitle("Controle Robô");
+        setActionBar(t);
+
         setContentView(R.layout.controle_robo);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        backEnabled = prefs.getBoolean("enable-back", false);
+        speedMultiplier = prefs.getInt("max-speed-percent", 25) / 100.0;
 
         initButtons();
     }
@@ -62,10 +78,10 @@ public abstract class BaseDeviceControlActivity extends Activity implements Runn
         btLeft.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     flagTouchLeft = true;
                 }
-                if(event.getAction() == MotionEvent.ACTION_UP) {
+                if (event.getAction() == MotionEvent.ACTION_UP) {
                     flagTouchLeft = false;
                 }
                 send(false);
@@ -77,10 +93,10 @@ public abstract class BaseDeviceControlActivity extends Activity implements Runn
         btRight.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     flagTouchRight = true;
                 }
-                if(event.getAction() == MotionEvent.ACTION_UP) {
+                if (event.getAction() == MotionEvent.ACTION_UP) {
                     flagTouchRight = false;
                 }
                 send(false);
@@ -92,7 +108,7 @@ public abstract class BaseDeviceControlActivity extends Activity implements Runn
         btFront.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     if (vel >= 0 && vel < 5) {
                         vel++;
                     } else if (vel == 6) {
@@ -110,12 +126,15 @@ public abstract class BaseDeviceControlActivity extends Activity implements Runn
         btBack.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     if (vel > 0 && vel <= 5) {
                         vel--;
                     } else if (vel == 0) {
                         //FINALLY fixed
-                        //Toast.makeText(BaseDeviceControlActivity.this, R.string.back_broken, Toast.LENGTH_SHORT).show();
+                        if (!backEnabled) {
+                            Toast.makeText(BaseDeviceControlActivity.this, R.string.back_broken, Toast.LENGTH_SHORT).show();
+                            return true;
+                        }
                         vel = 6;
                     } else if (vel >= 6 && vel < 10) {
                         vel++;
@@ -130,7 +149,7 @@ public abstract class BaseDeviceControlActivity extends Activity implements Runn
         stopButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     vel = 0;
                 }
                 send(false);
@@ -141,10 +160,10 @@ public abstract class BaseDeviceControlActivity extends Activity implements Runn
 
     @Override
     public void run() {
-        while(!Thread.currentThread().isInterrupted() && !isDestroyed()) {
+        while (!Thread.currentThread().isInterrupted() && !isDestroyed()) {
             try {
                 Thread.sleep(sendDelay());
-            } catch(InterruptedException e) {
+            } catch (InterruptedException e) {
                 return;
             }
 
@@ -163,15 +182,15 @@ public abstract class BaseDeviceControlActivity extends Activity implements Runn
     }
 
     private void send(boolean automatic) {
-        if(flagTouchLeft) {
-            if(vel > 0 && vel <= 5) {
-                if(l > 0) {
+        if (flagTouchLeft) {
+            if (vel > 0 && vel <= 5) {
+                if (l > 0) {
                     l--;
                 }
-            } else if(vel >= 6 && vel <= 10) {
-                if(l > 6) {
+            } else if (vel >= 6 && vel <= 10) {
+                if (l > 6) {
                     l--;
-                } else if(l == 6) {
+                } else if (l == 6) {
                     l = 0;
                 }
             }
@@ -179,16 +198,15 @@ public abstract class BaseDeviceControlActivity extends Activity implements Runn
             l = vel;
         }
 
-        if(flagTouchRight) {
-            if(vel > 0 && vel <= 5) {
-                if(r > 0) {
+        if (flagTouchRight) {
+            if (vel > 0 && vel <= 5) {
+                if (r > 0) {
                     r--;
                 }
-            }
-            else if(vel >= 6 && vel <= 10) {
-                if(r > 6) {
+            } else if (vel >= 6 && vel <= 10) {
+                if (r > 6) {
                     r--;
-                } else if(r == 6) {
+                } else if (r == 6) {
                     r = 0;
                 }
             }
@@ -196,11 +214,11 @@ public abstract class BaseDeviceControlActivity extends Activity implements Runn
             r = vel;
         }
 
-        if(vel == 0) {
-            if(flagTouchLeft) {
+        if (vel == 0) {
+            if (flagTouchLeft) {
                 r = 1;
             }
-            if(flagTouchRight) {
+            if (flagTouchRight) {
                 l = 1;
             }
         }

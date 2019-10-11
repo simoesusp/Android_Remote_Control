@@ -24,4 +24,11 @@
         android:layout_gravity="center"
         android:text="@string/wifi"
         android:id="@+id/button_wifi"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/settings"
+        android:id="@+id/button_settings"/>
 </LinearLayout>

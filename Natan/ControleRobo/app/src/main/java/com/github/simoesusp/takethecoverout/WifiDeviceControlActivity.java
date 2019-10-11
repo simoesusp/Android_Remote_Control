@@ -13,7 +13,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class WifiDeviceControlActivity extends BaseDeviceControlActivity {
-    private static final int MAX_SPEED_VALUE = 256;
+    private static final int MAX_SPEED_VALUE = 1024;
 
     private static final String TAG = WifiDeviceControlActivity.class.getSimpleName();
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
@@ -34,32 +34,33 @@ public class WifiDeviceControlActivity extends BaseDeviceControlActivity {
 
     @Override
     protected void sendMotorSpeed(boolean automatic, int l, int r) {
-        if(!automatic) {
-            if(lastL == l && lastR == r) {
+        if (!automatic) {
+            if (lastL == l && lastR == r) {
                 return;
             }
             lastL = l;
             lastR = r;
         } else {
-            synchronized(this) {
-                if(requestsExecuting.get() > 0) {
+            synchronized (this) {
+                if (requestsExecuting.get() > 0) {
                     return;
                 }
             }
         }
+        int maxSpeed = (int) (MAX_SPEED_VALUE * speedMultiplier);
         int speed1, speed2, dir1, dir2;
-        if(l <= 5) {
-            speed1 = MAX_SPEED_VALUE * l / 5;
+        if (l <= 5) {
+            speed1 = maxSpeed * l / 5;
             dir1 = 0;
         } else {
-            speed1 = MAX_SPEED_VALUE * (l - 5) / 5;
+            speed1 = maxSpeed * (l - 5) / 5;
             dir1 = 1;
         }
-        if(r <= 5) {
-            speed2 = MAX_SPEED_VALUE * r / 5;
+        if (r <= 5) {
+            speed2 = maxSpeed * r / 5;
             dir2 = 0;
         } else {
-            speed2 = MAX_SPEED_VALUE * (r - 5) / 5;
+            speed2 = maxSpeed * (r - 5) / 5;
             dir2 = 1;
         }
 
@@ -69,8 +70,8 @@ public class WifiDeviceControlActivity extends BaseDeviceControlActivity {
         speed1 = speed2;
         speed2 = temp;
 
-        synchronized(this) {
-            if(requestsExecuting.get() > 0 && automatic) {
+        synchronized (this) {
+            if (requestsExecuting.get() > 0 && automatic) {
                 return;
             }
             request(String.format("/motor?speed1=%d&speed2=%d&dir1=%d&dir2=%d", speed1, speed2, dir1, dir2));

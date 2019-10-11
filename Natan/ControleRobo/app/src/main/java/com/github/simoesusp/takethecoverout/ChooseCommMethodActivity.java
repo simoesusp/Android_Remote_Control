@@ -6,11 +6,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -25,8 +26,9 @@ public class ChooseCommMethodActivity extends Activity {
 
         Button bluetooth = findViewById(R.id.button_bluetooth);
         Button wifi = findViewById(R.id.button_wifi);
+        Button settings = findViewById(R.id.button_settings);
 
-        if(!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
             bluetooth.setEnabled(false);
         }
@@ -42,6 +44,13 @@ public class ChooseCommMethodActivity extends Activity {
             @Override
             public void onClick(View v) {
                 pickIp();
+            }
+        });
+
+        settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(ChooseCommMethodActivity.this, SettingsActivity.class));
             }
         });
     }
@@ -64,7 +73,7 @@ public class ChooseCommMethodActivity extends Activity {
                     i.putExtra(WifiDeviceControlActivity.HOST_EXTRA_KEY, ip);
                     startActivity(i);
                     dialog.dismiss();
-                } catch(MalformedURLException e) {
+                } catch (MalformedURLException e) {
                     Toast.makeText(ChooseCommMethodActivity.this, R.string.malformed_ip, Toast.LENGTH_SHORT).show();
                 }
             }

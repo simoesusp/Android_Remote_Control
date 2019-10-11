@@ -19,8 +19,6 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,6 +28,9 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,7 +64,7 @@ public class BluetoothActivity extends ListActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    for(ScanResult result : results) {
+                    for (ScanResult result : results) {
                         mLeDeviceListAdapter.addDevice(result.getDevice());
                     }
                     mLeDeviceListAdapter.notifyDataSetChanged();
@@ -86,8 +87,8 @@ public class BluetoothActivity extends ListActivity {
             return;
         }
 
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_COARSE_LOCATION);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_COARSE_LOCATION);
         } else {
             setupBt();
         }
@@ -150,7 +151,7 @@ public class BluetoothActivity extends ListActivity {
             return;
         }
         if (requestCode == REQUEST_COARSE_LOCATION) {
-            if(resultCode != PackageManager.PERMISSION_GRANTED) {
+            if (resultCode != PackageManager.PERMISSION_GRANTED) {
                 finish();
                 return;
             }
@@ -217,7 +218,7 @@ public class BluetoothActivity extends ListActivity {
 
     private void scanLeDevice(final boolean enable) {
         //scanner not initialized
-        if(mBluetoothScanner == null) {
+        if (mBluetoothScanner == null) {
             return;
         }
         if (enable) {
