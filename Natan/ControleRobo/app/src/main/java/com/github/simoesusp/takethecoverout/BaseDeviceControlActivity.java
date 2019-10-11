@@ -3,7 +3,6 @@ package com.github.simoesusp.takethecoverout;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -206,7 +205,6 @@ public abstract class BaseDeviceControlActivity extends Activity implements Runn
             }
         }
 
-        Log.d("TOMANOCU", "Sending " + l + ", " + r);
         sendMotorSpeed(automatic, l, r);
     }
 }

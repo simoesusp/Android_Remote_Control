@@ -1,3 +1,6 @@
 [submodule "Furry/ControleRobo"]
 	path = Furry/ControleRobo
 	url = https://github.com/DarkRyu550/takethecoverout
+[submodule "ESP32_Projects"]
+	path = ESP32_Projects
+	url = https://github.com/simoesups/ESP32_Projects
