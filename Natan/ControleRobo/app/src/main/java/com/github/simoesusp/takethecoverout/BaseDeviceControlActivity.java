@@ -182,37 +182,38 @@ public abstract class BaseDeviceControlActivity extends AppCompatActivity implem
     }
 
     private void send(boolean automatic) {
-        if (flagTouchLeft) {
-            if (vel > 0 && vel <= 5) {
-                if (l > 0) {
-                    l--;
-                }
-            } else if (vel >= 6 && vel <= 10) {
-                if (l > 6) {
-                    l--;
-                } else if (l == 6) {
-                    l = 0;
-                }
-            }
-        } else {
-            l = vel;
-        }
-
-        if (flagTouchRight) {
-            if (vel > 0 && vel <= 5) {
-                if (r > 0) {
-                    r--;
-                }
-            } else if (vel >= 6 && vel <= 10) {
-                if (r > 6) {
-                    r--;
-                } else if (r == 6) {
-                    r = 0;
-                }
-            }
-        } else {
-            r = vel;
-        }
+		if (flagTouchLeft) {
+			if (vel > 0 && vel <= 5) {
+				if (l > 0) {
+					l--;
+				}
+			} else if (vel >= 6 && vel <= 10) {
+				if (l > 6) {
+					l--;
+				} else if (l == 6) {
+					//l = 0;
+					if(r == 6) r++;
+				}
+			}
+		} else {
+			l = vel;
+			if (flagTouchRight) {
+				if (vel > 0 && vel <= 5) {
+					if (r > 0) {
+						r--;
+					}
+				} else if (vel >= 6 && vel <= 10) {
+					if (r > 6) {
+						r--;
+					} else if (r == 6) {
+						//r = 0;
+						if(l == 6) l++;
+					}
+				}
+			} else {
+				r = vel;
+			}
+		}
 
         if (vel == 0) {
             if (flagTouchLeft) {
